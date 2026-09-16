@@ -18,7 +18,7 @@ def handle_client(client_socket,client_address):
                 if len(data)-4==length:
                     print("Received data:", msg[4:length+4].decode("utf-8"))
                     return
-            if not data: # client disconnected or wrong length
+            if not data:
                 raise Exception("client disconnected or wrong length")
 
 
@@ -32,8 +32,8 @@ def run_server(ip,port):
         server_socket.listen()
 
         while True:
-            client_socket, client_address = server_socket.accept()#accept new connection
-            client_thread = threading.Thread(target = handle_client, args=(client_socket,client_address))#open thread for it
+            client_socket, client_address = server_socket.accept()
+            client_thread = threading.Thread(target = handle_client, args=(client_socket,client_address))
             client_thread.daemon = True
             client_thread.start()
     

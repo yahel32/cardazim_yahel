@@ -14,20 +14,13 @@ def send_data(server_ip, server_port, data):
     Send data to server in address (server_ip, server_port).
     '''
     msg_bytes = data.encode('utf-8')
-
-    # get the size (number of bytes)
     msg_size = len(msg_bytes)
-
-    #pack to bytes
     size_bytes = struct.pack('<I', msg_size)
-
-    #concat
     final_packet = size_bytes+msg_bytes
 
-    #create a socket object
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-    try:#connect to server
+    try:
          client_socket.connect((server_ip, server_port))
          print("Connected to server")
          client_socket.sendall(final_packet)
