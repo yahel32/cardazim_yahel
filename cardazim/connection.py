@@ -31,20 +31,19 @@ class Connection:
         receive a message and checks it using the protocol
         """
         msg = b''
+        expected_length = None
         while True:
-            # receive data first 4 bytes from the client
+            
             data=self.socket.recv(1024)
+            if not data:
+                raise Exception("closed before full transmission")
             msg+=data
-            if not data: # client disconnected or finished sending
-                if len(msg)<4:
-                    raise Exception("closed before full transmition")
-                elif len(msg)>=4:#check length
-                    length_bytes = msg[:4]
-                    length = int.from_bytes(length_bytes, byteorder='little')
-                    if len(msg) == 4+length:#correct
-                        return msg[4:].decode("utf-8")
-                    else:#wrong length
-                        raise Exception("closed before full transmition")
+            if expected_length is None and len(msg) >= 4:
+                expected_length = struct.unpack('<I', msg[:4])[0]
+            if expected_length is not None:
+                if len(msg) >= 4 + expected_length:
+                    actual_message = msg[4:4 + expected_length]
+                    return actual_message.decode("utf-8")
 
     @classmethod
     def connect(cls,host,port):
@@ -56,10 +55,10 @@ class Connection:
         self.socket.close()
 
     def __enter__(self):
-        return self.connect(self.host,self.port)
+        return self
     
     def __exit__(self,exc_type, exc_val, exc_tb):
-        self.socket.close()
+        self.close()
 
 
             

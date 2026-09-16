@@ -2,39 +2,35 @@ import socket
 import sys
 import argparse
 import threading
+import listener
+import connection
 
-def handle_client(client_socket,client_address):
+
+def handle_client(conn_obj):
     """
     recieves the information from the client and prints to screen
     """
 
-    msg = b''
-    with client_socket:
-        while True:
-            data= client_socket.recv(4096)
-            msg+=data
-            if len(data)>=4:
-                length = int.from_bytes(data[:4], byteorder='little')
-                if len(data)-4==length:
-                    print("Received data:", msg[4:length+4].decode("utf-8"))
-                    return
-            if not data: # client disconnected or wrong length
-                raise Exception("client disconnected or wrong length")
+    with conn_obj:
+        try:
+            message = conn_obj.receive_message()
+            
+            print("Received data:", message)
+            
+        except Exception as e:
+            print(f"Error handling client {conn_obj.remote_ip}: {e}")
 
 def run_server(ip,port):
     """
-    starting the server
+    creating and running the server
     """
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
-        server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        server_socket.bind((ip, port))
-        server_socket.listen()
-
+    with listener.Listener(port,ip) as server:
         while True:
-            client_socket, client_address = server_socket.accept()#accept new connection
-            client_thread = threading.Thread(target = handle_client, args=(client_socket,client_address))#open thread for it
+            conn = server.accept() 
+            client_thread = threading.Thread(target = handle_client, args=(conn,))
             client_thread.daemon = True
             client_thread.start()
+
     
 
 def get_args():
