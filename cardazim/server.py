@@ -13,7 +13,6 @@ def run_server(ip,port):
             msg = b''
             with client_socket:
                 while True:
-                    # receive data from the client (buffer size 1024 bytes)
                     data= client_socket.recv(4096)
 
                     
