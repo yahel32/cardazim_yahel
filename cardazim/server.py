@@ -2,6 +2,7 @@ import socket
 import sys
 import argparse
 import threading
+import struct
 
 def handle_client(client_socket,client_address):
     """
@@ -9,17 +10,21 @@ def handle_client(client_socket,client_address):
     """
 
     msg = b''
+    expected_length = None
     with client_socket:
         while True:
             data= client_socket.recv(4096)
-            msg+=data
-            if len(data)>=4:
-                length = int.from_bytes(data[:4], byteorder='little')
-                if len(data)-4==length:
-                    print("Received data:", msg[4:length+4].decode("utf-8"))
-                    return
             if not data:
                 raise Exception("client disconnected or wrong length")
+            msg+=data
+            
+            if expected_length is None and len(msg) >= 4:
+                expected_length = struct.unpack('<I', msg[:4])[0]
+
+            if expected_length is not None:
+                if len(msg) >= 4 + expected_length:
+                    actual_message = msg[4:4 + expected_length]
+                    return actual_message.decode("utf-8")
 
 
 def run_server(ip,port):
