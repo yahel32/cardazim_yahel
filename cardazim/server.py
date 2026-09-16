@@ -11,12 +11,15 @@ def handle_client(client_socket,client_address):
     msg = b''
     with client_socket:
         while True:
-            # receive data from the client (buffer size 1024 bytes)
             data= client_socket.recv(4096)
-            if not data: # client disconnected or finished sending
-                print("Received data:", msg.decode("utf-8"))
-                break
             msg+=data
+            if len(data)>=4:
+                length = int.from_bytes(data[:4], byteorder='little')
+                if len(data)-4==length:
+                    print("Received data:", msg[4:length+4].decode("utf-8"))
+                    return
+            if not data: # client disconnected or wrong length
+                raise Exception("client disconnected or wrong length")
 
 def run_server(ip,port):
     """
@@ -47,7 +50,6 @@ def main():
     Implementation of CLI and sending data to server.
     '''
     args = get_args()
-    # try:
     run_server(args.server_ip,args.server_port)
     print('Done.')
 

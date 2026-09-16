@@ -22,7 +22,7 @@ def send_data(server_ip, server_port, data):
     size_bytes = struct.pack('<I', msg_size)
 
     #concat
-    final_packet = msg_bytes + size_bytes
+    final_packet = size_bytes+msg_bytes
 
     #create a socket object
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -38,8 +38,6 @@ def send_data(server_ip, server_port, data):
         client_socket.close()
         print("Connection closed")
 
-
-    pass
 
 
 ###########################################################
