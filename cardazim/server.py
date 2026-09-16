@@ -17,14 +17,15 @@ def handle_client(client_socket,client_address):
             if not data:
                 raise Exception("client disconnected or wrong length")
             msg+=data
-            
+
             if expected_length is None and len(msg) >= 4:
                 expected_length = struct.unpack('<I', msg[:4])[0]
 
             if expected_length is not None:
                 if len(msg) >= 4 + expected_length:
                     actual_message = msg[4:4 + expected_length]
-                    return actual_message.decode("utf-8")
+                    print(actual_message.decode("utf-8"))
+                    return
 
 
 def run_server(ip,port):
